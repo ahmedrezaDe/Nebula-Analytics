@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss"; 
 
 :root {
   --background: #090a0f; /* Premium midnight dark */

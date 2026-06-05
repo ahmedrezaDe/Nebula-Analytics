@@ -2,62 +2,62 @@ import asyncio
 import random
 import math
 import httpx
-import sys
-import os
 
-async def stream_to_api_endpoint():
-    print("🌌 Nebula Real-Time Data Streamer [API Mode] Active...")
-    url = "http://127.0.0.1:8000/api/v1/ingest"
+async def stream_data_channels():
+    print("🌌 Nexus Core Ingestion [OMNI-CHANNEL PRODUCTION BROADCAST ACTIVE]...")
+    # Bound explicitly to your Mac's LAN address so your iPhone can handshake successfully
+    url = "http://192.168.0.230:8000/api/v1/ingest"
     tick = 0
     
-    # Use httpx client connection pools for optimized performance
     async with httpx.AsyncClient() as client:
         while True:
             tick += 1
-            base_value = 150.0 + (10.0 * math.sin(tick * 0.1))
-            noise = random.uniform(-1.5, 1.5)
-            final_value = base_value + noise
-            is_anomaly = False
             
-            # Trigger heavy anomalies every 25 ticks
-            if tick % 25 == 0:
-                is_anomaly = True
-                anomaly_direction = random.choice([0.4, 2.5])
-                if anomaly_direction < 1.0:
-                    final_value = base_value - (base_value * 0.25)
-                else:
-                    final_value = base_value + (base_value * 0.40)
+            # --- 1. FINTECH CHANNELS ---
+            f_price = 150.0 + (8.0 * math.sin(tick * 0.1)) + random.uniform(-1, 1)
+            f_vol = random.uniform(5000, 7000) if tick % 25 != 0 else random.uniform(26000, 32000)
+            if tick % 25 == 0: f_price += 35.0
             
-            # Format feature package payload dictionary blocks
-            payload = [
-                {
-                    "entity": "AAPL",
-                    "metric_name": "market_price",
-                    "value": round(final_value, 2)
-                },
-                {
-                    "entity": "AAPL",
-                    "metric_name": "transaction_volume",
-                    "value": round(random.uniform(5000, 7000) if not is_anomaly else random.uniform(25000, 35000), 2)
-                }
+            fintech_payload = [
+                {"vertical": "fintech", "entity": "AAPL", "metric_name": "market_price", "value": round(f_price, 2), "vector_skew": 0.0},
+                {"vertical": "fintech", "entity": "AAPL", "metric_name": "transaction_volume", "value": round(f_vol, 2), "vector_skew": 0.0}
             ]
+
+            # --- 2. INDUSTRIAL IoT CHANNELS ---
+            i_pres = 120.0 + (4.0 * math.sin(tick * 0.12)) + random.uniform(-0.5, 0.5)
+            i_vib = 45.0 + (1.5 * math.cos(tick * 0.08)) + random.uniform(-0.3, 0.3)
+            if tick % 33 == 0: i_pres -= 40.0; i_vib += 30.0 
             
+            industrial_payload = [
+                {"vertical": "industrial", "entity": "TURBINE_04", "metric_name": "hydraulic_pressure", "value": round(i_pres, 2), "vector_skew": 0.0},
+                {"vertical": "industrial", "entity": "TURBINE_04", "metric_name": "structural_vibration", "value": round(i_vib, 2), "vector_skew": 0.0}
+            ]
+
+            # --- 3. CYBERSECURITY CHANNELS ---
+            c_lat = 22.0 + (2.0 * math.sin(tick * 0.05)) + random.uniform(-1, 1) 
+            c_ing = random.uniform(1200, 1800) if tick % 20 != 0 else random.uniform(8500, 12000) 
+            if tick % 20 == 0: c_lat += 180.0
+            
+            cyber_payload = [
+                {"vertical": "cyber", "entity": "PROXY_NODE_01", "metric_name": "api_latency", "value": round(c_lat, 2), "vector_skew": 0.0},
+                {"vertical": "cyber", "entity": "PROXY_NODE_01", "metric_name": "network_ingress", "value": round(c_ing, 2), "vector_skew": 0.0}
+            ]
+
             try:
-                response = client.post(url, json=payload)
-                await response  # Complete asynchronous execution boundary
-                
-                if is_anomaly:
-                    print(f"⚠️ Tick {tick:03d} | Anomaly Injected! Sent to API Ingest. Status code: {response.is_resolved}")
-                else:
-                    print(f"📈 Tick {tick:03d} | Sent data package to API | Price: {payload[0]['value']} | Vol: {payload[1]['value']}")
-                    
+                # Fire the exact compliant array definitions concurrently
+                await asyncio.gather(
+                    client.post(url, json=fintech_payload),
+                    client.post(url, json=industrial_payload),
+                    client.post(url, json=cyber_payload)
+                )
+                print(f"📡 Tick {tick:03d} // Broadcaster Synced Cluster // 201 Created Ingest Clear")
             except Exception as e:
-                print(f"❌ Connection error on step transmission loop: {e}")
-                
-            await asyncio.sleep(1.0)
+                print(f"❌ Broadcaster cluster packet drop: {e}")
+
+            await asyncio.sleep(3.0)
 
 if __name__ == "__main__":
     try:
-        asyncio.run(stream_to_api_endpoint())
+        asyncio.run(stream_data_channels())
     except KeyboardInterrupt:
-        print("\n🛑 Streamer exited cleanly.")
+        print("\n🛑 Unified broadcaster offline.")

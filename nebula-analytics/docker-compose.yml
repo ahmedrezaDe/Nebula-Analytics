@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # 💾 NODE 1: Persistent Relational Time-Series Database
+  nexus-db:
+    image: timescale/timescaledb:latest-pg15
+    container_name: nexus-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nebula_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - nexus_postgres_data:/var/lib/postgresql/data
+    networks:
+      - nexus-mesh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nebula_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 🐍 NODE 2: Asynchronous Real-Time FastAPI & WebSocket Gateway
+  nexus-backend:
+    build:
+      context: ./backend
+    container_name: nexus-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Automatically points the app to the database container node over the local mesh network
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@nexus-db:5432/nebula_db
+    env_file:
+      - ./backend/.env
+    networks:
+      - nexus-mesh
+    depends_on:
+      nexus-db:
+        condition: service_healthy
+
+  # ⬢ NODE 3: Production Optimized Next.js Client Engine
+  nexus-frontend:
+    build:
+      context: ./frontend
+    container_name: nexus-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - nexus-mesh
+    depends_on:
+      - nexus-backend
+
+# Named storage volumes to guarantee data persists even if containers are destroyed
+volumes:
+  nexus_postgres_data:
+
+# Secure structural isolated network mesh overlay layout
+networks:
+  nexus-mesh:
+    driver: bridge
